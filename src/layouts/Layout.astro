@@ -1,5 +1,6 @@
 ---
 import ConfigCarrier from "../components/ConfigCarrier.astro";
+import WelcomePopup from "../components/control/WelcomePopup.astro";
 import WaveEffect from "../components/WaveEffect.astro";
 import {
   speedCustomStyleThWith,
@@ -60,6 +61,7 @@ const i18nInlineScript = `<script th:inline="javascript">
     "widget.music.progress": \`[(#{widget.music.progress})]\`,
     "widget.music.noCover": \`[(#{widget.music.noCover})]\`,
     "widget.music.cover": \`[(#{widget.music.cover})]\`,
+    "welcome.close": \`[(#{welcome.close})]\`,
   };
 </script>`;
 
@@ -76,6 +78,7 @@ const themeSettingScript = `<script type="application/json" id="theme-config" th
   th:lang="${#locale.toLanguageTag}"
   th:data-hue="${theme.config?.style?.themeColor?.hue}"
   th:data-hue-fixed="${theme.config?.style?.themeColor?.fixed}"
+  th:data-navbar-fixed="${theme.config?.style?.mobileMenu?.navbarFixed}"
   th:data-theme-anim-style="${theme.config?.style?.colorScheme?.enable_change_color_scheme == false ? 'none' : theme.config?.style?.colorScheme?.colorSchemeAnimation?.style}"
   th:data-theme-anim-easing="${theme.config?.style?.colorScheme?.colorSchemeAnimation?.easing}"
   th:data-theme-anim-angle="${theme.config?.style?.colorScheme?.colorSchemeAnimation?.angle}"
@@ -293,10 +296,12 @@ const themeSettingScript = `<script type="application/json" id="theme-config" th
     <ConfigCarrier />
     <slot />
     <WaveEffect />
+    <!-- 欢迎弹窗：置于 Swup 容器之外，换页不被替换销毁，弹窗逻辑仅首载执行一次 -->
+    <WelcomePopup />
     <div id="page-height-extend" class="hidden h-[300vh]"></div>
     <style is:global>
-      /* 移动端强制导航栏始终可见 */
-      @media (max-width: 767px) {
+      /* 移动/平板端（<1024px / lg）强制导航栏始终可见且固定 */
+      @media (max-width: 1023px) {
         #navbar-wrapper {
           position: fixed !important;
           top: 0 !important;
@@ -312,6 +317,42 @@ const themeSettingScript = `<script type="application/json" id="theme-config" th
         /* 防止内容被固定导航栏遮挡 */
         #top-row {
           height: 4.5rem !important;
+        }
+      }
+
+      /* 桌面端固定导航栏：与移动端方案一致，使用 fixed 定位强制始终可见 */
+      @media (min-width: 1024px) {
+        html[data-navbar-fixed="true"] #navbar-wrapper {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 50 !important;
+        }
+        html[data-navbar-fixed="true"] #navbar-wrapper.navbar-hidden {
+          translate: none !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        /* 防止内容被固定导航栏遮挡 */
+        html[data-navbar-fixed="true"] #top-row {
+          height: 4.5rem !important;
+        }
+        /* 非首页侧边栏吸顶位置下移 */
+        html[data-navbar-fixed="true"] body:not(.is-home) #sidebar-sticky,
+        html[data-navbar-fixed="true"]
+          body:not(.is-home)
+          #right-sidebar-sticky {
+          top: calc(4.5rem + 1rem) !important;
+        }
+        /* 首页侧边栏吸顶位置下移（首页有banner） */
+        html[data-navbar-fixed="true"]
+          body.is-home.enable-banner
+          #sidebar-sticky,
+        html[data-navbar-fixed="true"]
+          body.is-home.enable-banner
+          #right-sidebar-sticky {
+          top: calc(1rem - var(--banner-height-extend) + 4.5rem) !important;
         }
       }
     </style>

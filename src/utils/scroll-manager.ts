@@ -9,7 +9,9 @@ import {
 // 语义化常量，替代硬编码魔法数字
 const NAVBAR_HEIGHT_PX = 72; // 导航栏高度（约 4.5rem）
 const BASE_SPACING_PX = 16; // 基础间距（1rem = 16px）
-const MOBILE_BREAKPOINT = 768;
+// 移动/平板（<1024px / lg）共用抽屉菜单，导航栏不随滚动隐藏；
+// 桌面端（≥lg）才启用导航栏滚动隐藏
+const MOBILE_BREAKPOINT = 1024;
 
 const bannerEnabled = Boolean(document.getElementById("banner-wrapper"));
 
@@ -93,6 +95,8 @@ function scrollFunction() {
 
   if (window.innerWidth < MOBILE_BREAKPOINT) return;
   if (!bannerEnabled || !navbar) return;
+  // 固定导航栏模式：跳过隐藏逻辑，始终显示
+  if (document.documentElement.dataset.navbarFixed === "true") return;
   // threshold = bannerHeightPx - navbarHeight - panelOverlap(rem→px) - baseSpacing
   const threshold =
     bannerHeightPx -

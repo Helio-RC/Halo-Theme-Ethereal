@@ -361,6 +361,58 @@ spec:
                   step: 10
                   value: 700
                   help: "轮播图切换动画时长（原 700ms），随动画速度档位变化"
+        - $formkit: group
+          name: welcome
+          label: 欢迎弹窗
+          value:
+            enable: false
+            position: bottom-right
+            title: "欢迎来到我的博客！"
+            template: "来自 {location} 的小伙伴，很高兴遇见你！"
+            fallbackLocation: "未知星球"
+          children:
+            - $formkit: switch
+              name: enable
+              id: welcome_enable
+              key: welcome_enable
+              label: 启用
+              value: false
+              help: "开启后访客进入网站时显示欢迎弹窗；访客关闭后本次会话不再弹出。IP 定位复用天气小组件配置的腾讯位置服务 Key"
+            - $formkit: select
+              name: position
+              id: welcome_position
+              key: welcome_position
+              if: "$get(welcome_enable).value"
+              label: 弹窗位置
+              value: bottom-right
+              help: "电脑端弹窗显示在所选角落；移动端固定显示在底部居中"
+              options:
+                - label: 左上角
+                  value: top-left
+                - label: 右上角
+                  value: top-right
+                - label: 左下角
+                  value: bottom-left
+                - label: 右下角
+                  value: bottom-right
+            - $formkit: text
+              name: title
+              if: "$get(welcome_enable).value"
+              label: 欢迎标题
+              value: "欢迎来到我的博客！"
+              help: "弹窗标题文字"
+            - $formkit: textarea
+              name: template
+              if: "$get(welcome_enable).value"
+              label: 欢迎语模板
+              value: "来自 {location} 的小伙伴，很高兴遇见你！"
+              help: "弹窗正文，{location} 会替换为访客 IP 定位（如：北京市）；未配置 Key 或定位失败时替换为下方的降级文案"
+            - $formkit: text
+              name: fallbackLocation
+              if: "$get(welcome_enable).value"
+              label: 定位失败文案
+              value: "未知星球"
+              help: "未配置腾讯位置服务 Key 或定位失败时，替换 {location} 的地点文字（请填写地点名词，如：未知星球）。模板为「来自 {location} 的小伙伴」时，将显示「来自未知星球的小伙伴」"
         - $formkit: menuRadio
           id: menu
           name: menu
@@ -499,6 +551,30 @@ spec:
               label: 卡片悬浮效果
               value: true
               help: "卡片悬停时轻微上移并显示主题色阴影"
+        - $formkit: group
+          name: mobileMenu
+          label: 菜单栏设置
+          value:
+            style: accordion
+          children:
+            - $formkit: select
+              name: style
+              id: mobileMenu_style
+              key: mobileMenu_style
+              label: 移动端菜单样式
+              value: accordion
+              help: "手风琴：从导航栏下方展开下拉面板，带子菜单手风琴折叠；抽屉：从右侧滑出的圆角卡片，子菜单平铺展示"
+              options:
+                - label: 手风琴样式
+                  value: accordion
+                - label: 抽屉样式
+                  value: drawer
+            - $formkit: switch
+              name: navbarFixed
+              id: navbarFixed
+              label: 固定导航栏
+              value: false
+              help: "开启后桌面端导航栏始终固定在页面顶部，滚动页面时不会自动收起（移动端默认始终固定）"
 
         - $formkit: group
           name: floatingButtons
@@ -1057,6 +1133,69 @@ spec:
     - group: post
       label: 文章
       formSchema:
+        - $formkit: group
+          name: postList
+          label: 文章卡片布局
+          value:
+            defaultMode: list
+            coverPosition: right
+            descriptionLines: 2
+            grid:
+              masonry: false
+              coverFullWidth: false
+          children:
+            - $formkit: select
+              name: defaultMode
+              id: postList_defaultMode
+              label: 默认布局
+              value: list
+              help: "列表：单列布局，封面显示在卡片侧边；网格：多列布局，封面显示在卡片顶部"
+              options:
+                - label: 列表
+                  value: list
+                - label: 网格
+                  value: grid
+            - $formkit: select
+              name: coverPosition
+              id: postList_coverPosition
+              key: postList_coverPosition
+              if: "$get(postList_defaultMode).value === 'list'"
+              label: 列表模式封面位置
+              value: right
+              help: "仅列表布局生效：封面显示在卡片右侧或左侧"
+              options:
+                - label: 右侧
+                  value: right
+                - label: 左侧
+                  value: left
+            - $formkit: number
+              name: descriptionLines
+              label: 简介显示行数
+              value: 2
+              min: 0
+              max: 6
+              step: 1
+              help: "文章简介显示行数，设为 0 则不截断"
+            - $formkit: group
+              name: grid
+              id: postList_grid
+              key: postList_grid
+              if: "$get(postList_defaultMode).value === 'grid'"
+              label: 网格设置
+              help: "以下设置仅网格布局生效"
+              children:
+                - $formkit: switch
+                  name: masonry
+                  key: postList_grid_masonry
+                  label: 瀑布流
+                  value: false
+                  help: "开启后网格使用瀑布流（Masonry）布局：卡片高度参差不齐、错落排列，推荐有图无图混合时开启"
+                - $formkit: switch
+                  name: coverFullWidth
+                  key: postList_grid_coverFullWidth
+                  label: 封面贴边
+                  value: false
+                  help: "开启后封面撑满卡片顶部贴边（仅上两角圆角）；关闭则封面按内边距内缩，四角圆角"
         - $formkit: group
           name: license
           label: 版权声明
